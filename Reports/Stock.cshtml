@@ -1,0 +1,28 @@
+﻿@model List<POSSystem.Models.Product>
+@{
+    ViewData["Title"] = "Stock Report";
+}
+
+<h1>Current Stock Report</h1>
+
+<table class="table">
+    <thead>
+        <tr><th>Product</th><th>Category</th><th>Stock</th><th>Reorder Level</th><th>Cost Value</th><th>Selling Value</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr class="@(p.CurrentStock <= p.ReorderLevel ? "table-warning" : "")">
+                <td>@p.Name</td>
+                <td>@(p.Category?.Name ?? "--")</td>
+                <td>@p.CurrentStock</td>
+                <td>@p.ReorderLevel</td>
+                <td>Rs.@((p.CurrentStock * p.CostPrice).ToString("N2"))</td>
+                <td>Rs.@((p.CurrentStock * p.SellingPrice).ToString("N2"))</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4 class="text-end">Total Cost Value: Rs.@Model.Sum(p => p.CurrentStock * p.CostPrice).ToString("N2")</h4>
+<h4 class="text-end">Total Selling Value: Rs.@Model.Sum(p => p.CurrentStock * p.SellingPrice).ToString("N2")</h4>

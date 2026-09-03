@@ -1,0 +1,67 @@
+﻿@model POSSystem.Models.BusinessSetting
+@{
+    ViewData["Title"] = "Business Settings";
+}
+
+<h1>Business Settings</h1>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+
+<form asp-controller="Settings" asp-action="Index" method="post" class="w-50">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label class="form-label">Business Name</label>
+        <input asp-for="BusinessName" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Address</label>
+        <input asp-for="Address" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Phone</label>
+        <input asp-for="Phone" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Tax Number</label>
+        <input asp-for="TaxNumber" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Tax Rate (%)</label>
+        <input asp-for="TaxRate" type="number" step="0.01" class="form-control" />
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="TaxInclusive" class="form-check-input" />
+        <label class="form-check-label">Prices are tax-inclusive</label>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Currency Symbol</label>
+        <input asp-for="CurrencySymbol" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Invoice Prefix</label>
+        <input asp-for="InvoicePrefix" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Receipt Header</label>
+        <textarea asp-for="ReceiptHeader" class="form-control" rows="2"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Receipt Footer</label>
+        <textarea asp-for="ReceiptFooter" class="form-control" rows="2"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Settings</button>
+</form>

@@ -1,0 +1,30 @@
+﻿@model POSSystem.Models.SaleReturn
+@{
+    ViewData["Title"] = "Return Details";
+}
+
+<h1>@Model.ReturnNo</h1>
+<p>
+    <strong>Original Invoice:</strong> @(Model.Sale?.InvoiceNo ?? "--") <br />
+    <strong>Reason:</strong> @Model.Reason <br />
+    <strong>Refund Method:</strong> @Model.RefundMethod <br />
+    <strong>Date:</strong> @Model.DateTime.ToString("yyyy-MM-dd HH:mm")
+</p>
+
+<table class="table">
+    <thead><tr><th>Product</th><th>Qty</th><th>Amount</th></tr></thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@(item.SaleItem?.ProductNameSnapshot ?? "--")</td>
+                <td>@item.Quantity</td>
+                <td>Rs.@item.Amount.ToString("N2")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4 class="text-end">Refund Total: Rs.@Model.RefundTotal.ToString("N2")</h4>
+
+<a asp-controller="Returns" asp-action="Index" class="btn btn-secondary">Back to Returns</a>

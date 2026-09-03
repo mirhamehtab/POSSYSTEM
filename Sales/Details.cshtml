@@ -1,0 +1,68 @@
+﻿@model POSSystem.Models.Sale
+@{
+    ViewData["Title"] = "Sale Details";
+    Layout = "_Layout";
+}
+
+<div class="d-flex justify-content-between align-items-center d-print-none">
+    <h1>Invoice @Model.InvoiceNo</h1>
+    <button onclick="window.print()" class="btn btn-primary">Print Receipt</button>
+</div>
+
+<div id="receiptArea">
+    <div class="text-center mb-3">
+        <h3>@(ViewBag.BusinessName ?? "POSSystem")</h3>
+        <p class="mb-0">Invoice: @Model.InvoiceNo</p>
+        <p>@Model.DateTime.ToString("yyyy-MM-dd HH:mm")</p>
+    </div>
+
+    <p>
+        <strong>Customer:</strong> @(Model.Customer?.Name ?? "Walk-in Customer") <br />
+        <strong>Payment Method:</strong> @Model.PaymentMethod
+    </p>
+
+    <table class="table">
+        <thead>
+            <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Line Total</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.ProductNameSnapshot</td>
+                    <td>@item.Quantity</td>
+                    <td>Rs.@item.UnitPrice.ToString("N2")</td>
+                    <td>Rs.@item.LineTotal.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="w-25 ms-auto">
+        <div class="d-flex justify-content-between"><span>Subtotal</span><span>Rs.@Model.Subtotal.ToString("N2")</span></div>
+        <div class="d-flex justify-content-between"><span>Discount</span><span>Rs.@Model.Discount.ToString("N2")</span></div>
+        <div class="d-flex justify-content-between"><span>Tax</span><span>Rs.@Model.Tax.ToString("N2")</span></div>
+        <div class="d-flex justify-content-between fw-bold fs-5"><span>Total</span><span>Rs.@Model.Total.ToString("N2")</span></div>
+        @if (Model.PaymentMethod == "Cash")
+        {
+            <div class="d-flex justify-content-between"><span>Amount Received</span><span>Rs.@Model.AmountReceived.ToString("N2")</span></div>
+            <div class="d-flex justify-content-between"><span>Change Due</span><span>Rs.@Model.ChangeDue.ToString("N2")</span></div>
+        }
+    </div>
+
+    <p class="text-center text-muted mt-4">Thank you for your business!</p>
+</div>
+
+<a asp-controller="Sales" asp-action="Index" class="btn btn-secondary mt-3 d-print-none">Back to Sales History</a>
+
+<style>
+    @@media print {
+        nav, footer, .d-print-none {
+            display: none !important;
+        }
+
+        #receiptArea {
+            width: 100%;
+        }
+    }
+</style>

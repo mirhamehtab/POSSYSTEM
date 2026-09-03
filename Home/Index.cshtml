@@ -1,0 +1,81 @@
+﻿@using POSSystem.Models
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h1>Dashboard</h1>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card p-3">
+            <div class="text-muted">Today's Sales</div>
+            <div class="fs-3 fw-bold">@ViewBag.TodaySalesCount</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3">
+            <div class="text-muted">Today's Net Sales</div>
+            <div class="fs-3 fw-bold">Rs.@(((decimal)ViewBag.TodayNetSales).ToString("N2"))</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <a asp-controller="Sales" asp-action="Pos" class="btn btn-success w-100 h-100 d-flex align-items-center justify-content-center fs-5">+ New Sale</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <h4>Low Stock Alerts</h4>
+        @{
+            var lowStock = (List<Product>)ViewBag.LowStockProducts;
+        }
+        @if (lowStock.Count == 0)
+        {
+            <p class="text-muted">Nothing below reorder level.</p>
+        }
+        else
+        {
+            <table class="table table-sm">
+                <thead><tr><th>Product</th><th>Stock</th><th>Reorder Level</th></tr></thead>
+                <tbody>
+                    @foreach (var p in lowStock)
+                    {
+                        <tr class="table-warning">
+                            <td>@p.Name</td>
+                            <td>@p.CurrentStock</td>
+                            <td>@p.ReorderLevel</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <div class="col-md-6">
+        <h4>Recent Sales</h4>
+        @{
+            var recent = (List<Sale>)ViewBag.RecentSales;
+        }
+        @if (recent.Count == 0)
+        {
+            <p class="text-muted">No sales yet.</p>
+        }
+        else
+        {
+            <table class="table table-sm">
+                <thead><tr><th>Invoice</th><th>Customer</th><th>Total</th><th>Time</th></tr></thead>
+                <tbody>
+                    @foreach (var s in recent)
+                    {
+                        <tr>
+                            <td><a asp-controller="Sales" asp-action="Details" asp-route-id="@s.Id">@s.InvoiceNo</a></td>
+                            <td>@(s.Customer?.Name ?? "Walk-in")</td>
+                            <td>Rs.@s.Total.ToString("N2")</td>
+                            <td>@s.DateTime.ToString("HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

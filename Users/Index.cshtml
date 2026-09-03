@@ -1,0 +1,49 @@
+@{
+    ViewData["Title"] = "Users";
+    var rows = (List<(Microsoft.AspNetCore.Identity.IdentityUser User, IList<string> Roles)>)ViewBag.Rows;
+}
+
+<h1>Users</h1>
+<a asp-controller="Users" asp-action="Create" class="btn btn-primary float-end my-2">Add User</a>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<table class="table">
+    <thead>
+        <tr><th>Email</th><th>Role</th><th>Change Role</th><th>Reset Password</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var row in rows)
+        {
+            <tr>
+                <td>@row.User.Email</td>
+                <td>@string.Join(", ", row.Roles)</td>
+                <td>
+                    <form asp-controller="Users" asp-action="ChangeRole" method="post" class="d-flex gap-1" onsubmit="return confirm('Change role for ' + '@row.User.Email' + '?')">
+                        <input type="hidden" name="userId" value="@row.User.Id" />
+                        <select name="newRole" class="form-select form-select-sm" style="width:140px">
+                            <option value="Administrator" selected="@(row.Roles.Contains("Administrator"))">Administrator</option>
+                            <option value="Manager" selected="@(row.Roles.Contains("Manager"))">Manager</option>
+                            <option value="Cashier" selected="@(row.Roles.Contains("Cashier"))">Cashier</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-secondary">Save</button>
+                    </form>
+                </td>
+                <td>
+                    <form asp-controller="Users" asp-action="ResetPassword" method="post" class="d-flex gap-1" onsubmit="return confirm('Reset password for ' + '@row.User.Email' + '?')">
+                        <input type="hidden" name="userId" value="@row.User.Id" />
+                        <input type="password" name="newPassword" placeholder="new password" class="form-control form-control-sm" style="width:140px" required minlength="6" />
+                        <button type="submit" class="btn btn-sm btn-warning">Reset</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

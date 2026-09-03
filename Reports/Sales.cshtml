@@ -1,0 +1,31 @@
+﻿@{
+    ViewData["Title"] = "Sales Report";
+}
+
+<h1>Sales Summary</h1>
+
+<form method="get" asp-controller="Reports" asp-action="Sales" class="row mb-4">
+    <div class="col-md-3">
+        <label class="form-label">From</label>
+        <input type="date" name="from" class="form-control" value="@ViewBag.From" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">To</label>
+        <input type="date" name="to" class="form-control" value="@ViewBag.To" />
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary">Run Report</button>
+    </div>
+</form>
+
+<table class="table w-50">
+    <tbody>
+        <tr><td>Gross Sales</td><td class="text-end">Rs.@(((decimal)ViewBag.GrossSales).ToString("N2"))</td></tr>
+        <tr><td>Discounts</td><td class="text-end">Rs.@(((decimal)ViewBag.TotalDiscount).ToString("N2"))</td></tr>
+        <tr><td>Tax</td><td class="text-end">Rs.@(((decimal)ViewBag.TotalTax).ToString("N2"))</td></tr>
+        <tr><td>Returns</td><td class="text-end">Rs.@(((decimal)ViewBag.TotalReturns).ToString("N2"))</td></tr>
+        <tr class="fw-bold fs-5"><td>Net Sales</td><td class="text-end">Rs.@(((decimal)ViewBag.NetSales).ToString("N2"))</td></tr>
+        <tr><td>Transaction Count</td><td class="text-end">@ViewBag.TransactionCount</td></tr>
+        <tr><td>Average Sale</td><td class="text-end">Rs.@(((decimal)ViewBag.AverageSale).ToString("N2"))</td></tr>
+    </tbody>
+</table>

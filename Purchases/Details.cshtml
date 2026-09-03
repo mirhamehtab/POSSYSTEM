@@ -1,0 +1,34 @@
+﻿@model POSSystem.Models.Purchase
+@{
+    ViewData["Title"] = "Purchase Details";
+}
+
+<h1>@Model.PurchaseNo</h1>
+<p>
+    <strong>Supplier:</strong> @(Model.Supplier?.Name ?? "--") <br />
+    <strong>Status:</strong> @Model.Status <br />
+    <strong>Date:</strong> @Model.PurchaseDate.ToString("yyyy-MM-dd HH:mm") <br />
+    @if (Model.ReceivedAt.HasValue)
+    {
+        <span><strong>Received At:</strong> @Model.ReceivedAt.Value.ToString("yyyy-MM-dd HH:mm")</span>
+    }
+</p>
+
+<table class="table">
+    <thead><tr><th>Product</th><th>Qty</th><th>Unit Cost</th><th>Line Total</th></tr></thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@(item.Product?.Name ?? "--")</td>
+                <td>@item.Quantity</td>
+                <td>Rs.@item.UnitCost.ToString("N2")</td>
+                <td>Rs.@item.LineTotal.ToString("N2")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4 class="text-end">Total: Rs.@Model.Total.ToString("N2")</h4>
+
+<a asp-controller="Purchases" asp-action="Index" class="btn btn-secondary">Back to Purchases</a>

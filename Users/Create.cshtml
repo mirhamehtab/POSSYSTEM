@@ -1,0 +1,29 @@
+@{
+    ViewData["Title"] = "Add User";
+    var roles = (string[])ViewBag.Roles;
+}
+
+<h1>Add User</h1>
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<form asp-controller="Users" asp-action="Create" method="post" class="w-50">
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input name="email" type="email" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input name="password" type="password" class="form-control" required minlength="6" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Role</label>
+        <select name="role" class="form-select">
+            @foreach (var r in roles)
+            {
+                <option value="@r">@r</option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Create User</button>
+</form>

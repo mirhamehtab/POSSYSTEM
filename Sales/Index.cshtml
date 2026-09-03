@@ -1,0 +1,24 @@
+﻿@model List<POSSystem.Models.Sale>
+@{
+    ViewData["Title"] = "Sales History";
+}
+
+<h1>Sales History</h1>
+
+<table class="table">
+    <thead>
+        <tr><th>Invoice</th><th>Customer</th><th>Payment</th><th>Total</th><th>Date/Time</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var s in Model)
+        {
+            <tr>
+                <td><a asp-controller="Sales" asp-action="Details" asp-route-id="@s.Id">@s.InvoiceNo</a></td>
+                <td>@(s.Customer?.Name ?? "Walk-in")</td>
+                <td>@s.PaymentMethod</td>
+                <td>Rs.@s.Total.ToString("N2")</td>
+                <td>@s.DateTime.ToString("yyyy-MM-dd HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>

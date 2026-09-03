@@ -1,0 +1,43 @@
+﻿@model POSSystem.Models.Expense
+@{
+    ViewData["Title"] = "Add Expense";
+}
+
+<h1>Add Expense</h1>
+
+<form asp-controller="Expenses" asp-action="Create" method="post" class="w-50">
+    <div class="mb-3">
+        <label class="form-label">Category</label>
+        <select asp-for="ExpenseCategoryId" class="form-select">
+            @foreach (var c in (List<POSSystem.Models.ExpenseCategory>)ViewBag.Categories)
+            {
+                <option value="@c.Id">@c.Name</option>
+            }
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Date</label>
+        <input asp-for="Date" type="date" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Amount</label>
+        <input asp-for="Amount" type="number" step="0.01" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Payment Method</label>
+        <select asp-for="PaymentMethod" class="form-select">
+            <option value="Cash">Cash</option>
+            <option value="Card">Card</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Description</label>
+        <input asp-for="Description" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Reference (optional)</label>
+        <input asp-for="Reference" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>

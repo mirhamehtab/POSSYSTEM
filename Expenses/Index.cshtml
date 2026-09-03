@@ -1,0 +1,61 @@
+﻿@model List<POSSystem.Models.Expense>
+@{
+    ViewData["Title"] = "Expenses";
+}
+
+<h1>Expenses</h1>
+<a asp-controller="Expenses" asp-action="Create" class="btn btn-primary float-end my-2">Add Expense</a>
+
+<form method="get" asp-controller="Expenses" asp-action="Index" class="row mb-3">
+    <div class="col-md-3">
+        <label class="form-label">From</label>
+        <input type="date" name="from" class="form-control" value="@ViewBag.From" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">To</label>
+        <input type="date" name="to" class="form-control" value="@ViewBag.To" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Category</label>
+        <select name="categoryId" class="form-select">
+            <option value="">All</option>
+            @foreach (var c in (List<POSSystem.Models.ExpenseCategory>)ViewBag.Categories)
+            {
+                <option value="@c.Id">@c.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-secondary">Filter</button>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr><th>Date</th><th>Category</th><th>Amount</th><th>Payment</th><th>Description</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var e in Model)
+        {
+            <tr class="@(e.IsVoided ? "table-secondary text-decoration-line-through" : "")">
+                <td>@e.Date.ToString("yyyy-MM-dd")</td>
+                <td>@(e.ExpenseCategory?.Name ?? "--")</td>
+                <td>Rs.@e.Amount.ToString("N2")</td>
+                <td>@e.PaymentMethod</td>
+                <td>@e.Description</td>
+                <td>@(e.IsVoided ? "Voided" : "Active")</td>
+                <td>
+                    @if (!e.IsVoided)
+                    {
+                        <form asp-controller="Expenses" asp-action="Void" asp-route-id="@e.Id" method="post" class="d-flex gap-1" onsubmit="return confirm('Void this expense?')">
+                            <input type="text" name="voidReason" placeholder="reason" class="form-control form-control-sm" style="width:120px" required />
+                            <button type="submit" class="btn btn-sm btn-danger">Void</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4 class="text-end">Total (active): Rs.@(((decimal)ViewBag.Total).ToString("N2"))</h4>

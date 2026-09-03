@@ -1,0 +1,51 @@
+﻿@model List<POSSystem.Models.Purchase>
+@{
+    ViewData["Title"] = "Purchases";
+}
+
+<h1>Purchases</h1>
+<a asp-controller="Purchases" asp-action="Create" class="btn btn-primary float-end my-2">New Purchase</a>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<table class="table">
+    <thead>
+        <tr><th>Purchase No</th><th>Supplier</th><th>Date</th><th>Status</th><th>Total</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td><a asp-controller="Purchases" asp-action="Details" asp-route-id="@p.Id">@p.PurchaseNo</a></td>
+                <td>@(p.Supplier?.Name ?? "--")</td>
+                <td>@p.PurchaseDate.ToString("yyyy-MM-dd")</td>
+                <td>
+                    @if (p.Status == "Received")
+                    {
+                        <span class="badge bg-success">Received</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Draft</span>
+                    }
+                </td>
+                <td>Rs.@p.Total.ToString("N2")</td>
+                <td>
+                    @if (p.Status == "Draft")
+                    {
+                        <form asp-controller="Purchases" asp-action="Receive" asp-route-id="@p.Id" method="post" class="d-inline" onsubmit="return confirm('Receive this purchase? Stock will be updated.')">
+                            <button type="submit" class="btn btn-sm btn-success">Receive</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,25 @@
+﻿@model List<POSSystem.Models.SaleReturn>
+@{
+    ViewData["Title"] = "Returns";
+}
+
+<h1>Returns</h1>
+<a asp-controller="Returns" asp-action="Find" class="btn btn-danger float-end my-2">Process New Return</a>
+
+<table class="table">
+    <thead>
+        <tr><th>Return No</th><th>Original Invoice</th><th>Reason</th><th>Refund</th><th>Date</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td><a asp-controller="Returns" asp-action="Details" asp-route-id="@r.Id">@r.ReturnNo</a></td>
+                <td>@(r.Sale?.InvoiceNo ?? "--")</td>
+                <td>@r.Reason</td>
+                <td>Rs.@r.RefundTotal.ToString("N2")</td>
+                <td>@r.DateTime.ToString("yyyy-MM-dd HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>

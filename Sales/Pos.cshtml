@@ -1,0 +1,207 @@
+﻿@{
+    ViewData["Title"] = "POS - New Sale";
+}
+
+<h1>New Sale</h1>
+
+<div class="row">
+    <div class="col-md-7">
+        <input type="text" id="searchBox" class="form-control mb-2" placeholder="Search product by name, SKU, or scan barcode..." autofocus />
+        <div id="searchResults" class="list-group mb-3"></div>
+
+        <table class="table" id="cartTable">
+            <thead>
+                <tr><th>Product</th><th>Qty</th><th>Price</th><th>Line Total</th><th></th></tr>
+            </thead>
+            <tbody id="cartBody"></tbody>
+        </table>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card p-3">
+            <label class="form-label">Customer</label>
+            <select id="customerSelect" class="form-select mb-2">
+                <option value="@ViewBag.WalkInCustomerId">Walk-in Customer</option>
+                @foreach (var c in (List<POSSystem.Models.Customer>)ViewBag.Customers)
+                {
+                    <option value="@c.Id">@c.Name</option>
+                }
+            </select>
+
+            <label class="form-label">Order Discount</label>
+            <input type="number" id="orderDiscount" class="form-control mb-2" value="0" min="0" />
+
+            <hr />
+            <div class="d-flex justify-content-between"><span>Subtotal</span><span id="subtotalDisplay">0.00</span></div>
+            <div class="d-flex justify-content-between"><span>Tax</span><span id="taxDisplay">0.00</span></div>
+            <div class="d-flex justify-content-between fw-bold fs-5"><span>Total</span><span id="totalDisplay">0.00</span></div>
+            <hr />
+
+            <label class="form-label">Payment Method</label>
+            <select id="paymentMethod" class="form-select mb-2">
+                <option value="Cash">Cash</option>
+                <option value="Card">Card</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Mobile Payment">Mobile Payment</option>
+            </select>
+
+            <div id="cashFields">
+                <label class="form-label">Amount Received</label>
+                <input type="number" id="amountReceived" class="form-control mb-2" value="0" />
+                <div class="d-flex justify-content-between"><span>Change Due</span><span id="changeDisplay">0.00</span></div>
+            </div>
+
+            <button id="completeBtn" class="btn btn-success w-100 mt-3 py-2">Complete Sale</button>
+            <div id="resultMessage" class="mt-2"></div>
+        </div>
+    </div>
+</div>
+
+<form id="antiForgeryForm" style="display:none">@Html.AntiForgeryToken()</form>
+
+@section Scripts {
+    <script>
+        const antiForgeryToken = document.querySelector('#antiForgeryForm input[name=__RequestVerificationToken]').value;
+        const taxRate = @ViewBag.TaxRate;
+        const currency = "@ViewBag.CurrencySymbol";
+
+        let cart = [];
+
+        const searchBox = document.getElementById('searchBox');
+        const searchResults = document.getElementById('searchResults');
+        const cartBody = document.getElementById('cartBody');
+        const paymentMethod = document.getElementById('paymentMethod');
+        const cashFields = document.getElementById('cashFields');
+        const amountReceived = document.getElementById('amountReceived');
+        const completeBtn = document.getElementById('completeBtn');
+
+        function debounce(fn, delay) {
+            let t;
+            return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), delay); };
+        }
+
+        searchBox.addEventListener('input', debounce(async function () {
+            const term = searchBox.value.trim();
+            if (!term) { searchResults.innerHTML = ''; return; }
+
+            const res = await fetch(`/Sales/SearchProducts?term=${encodeURIComponent(term)}`);
+            const products = await res.json();
+
+            searchResults.innerHTML = products.map(p => `
+                <button type="button" class="list-group-item list-group-item-action" onclick="addToCart(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.sellingPrice}, ${p.isTaxable}, ${p.currentStock})">
+                    ${p.name} (${p.sku}) -- ${currency}${p.sellingPrice} -- stock: ${p.currentStock}
+                </button>
+            `).join('');
+        }, 300));
+
+        searchBox.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') e.preventDefault();
+        });
+
+        function addToCart(productId, name, price, isTaxable, stock) {
+            const existing = cart.find(i => i.productId === productId);
+            if (existing) {
+                if (existing.qty + 1 > stock) { alert('Not enough stock.'); return; }
+                existing.qty++;
+            } else {
+                cart.push({ productId, name, price, isTaxable, qty: 1, stock });
+            }
+            searchBox.value = '';
+            searchResults.innerHTML = '';
+            renderCart();
+        }
+
+        function updateQty(productId, qty) {
+            const item = cart.find(i => i.productId === productId);
+            if (!item) return;
+            qty = parseInt(qty) || 0;
+            if (qty <= 0) { cart = cart.filter(i => i.productId !== productId); }
+            else if (qty > item.stock) { alert('Not enough stock.'); return; }
+            else { item.qty = qty; }
+            renderCart();
+        }
+
+        function removeItem(productId) {
+            cart = cart.filter(i => i.productId !== productId);
+            renderCart();
+        }
+
+        function renderCart() {
+            cartBody.innerHTML = cart.map(i => `
+                <tr>
+                    <td>${i.name}</td>
+                    <td><input type="number" value="${i.qty}" min="1" style="width:60px" onchange="updateQty(${i.productId}, this.value)" /></td>
+                    <td>${currency}${i.price.toFixed(2)}</td>
+                    <td>${currency}${(i.price * i.qty).toFixed(2)}</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="removeItem(${i.productId})">x</button></td>
+                </tr>
+            `).join('');
+            recalcTotals();
+        }
+
+        function recalcTotals() {
+            const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+            const taxableSum = cart.filter(i => i.isTaxable).reduce((sum, i) => sum + i.price * i.qty, 0);
+            const discount = Math.min(parseFloat(document.getElementById('orderDiscount').value) || 0, subtotal);
+            const tax = taxableSum * (taxRate / 100);
+            const total = subtotal - discount + tax;
+
+            document.getElementById('subtotalDisplay').textContent = currency + subtotal.toFixed(2);
+            document.getElementById('taxDisplay').textContent = currency + tax.toFixed(2);
+            document.getElementById('totalDisplay').textContent = currency + total.toFixed(2);
+
+            const change = (parseFloat(amountReceived.value) || 0) - total;
+            document.getElementById('changeDisplay').textContent = currency + Math.max(change, 0).toFixed(2);
+        }
+
+        document.getElementById('orderDiscount').addEventListener('input', recalcTotals);
+        amountReceived.addEventListener('input', recalcTotals);
+
+        paymentMethod.addEventListener('change', function () {
+            cashFields.style.display = this.value === 'Cash' ? 'block' : 'none';
+        });
+
+        completeBtn.addEventListener('click', async function () {
+            if (cart.length === 0) { alert('Cart is empty.'); return; }
+
+            const btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            try {
+                const payload = {
+                    items: cart.map(i => ({ productId: i.productId, quantity: i.qty })),
+                    customerId: document.getElementById('customerSelect').value || null,
+                    paymentMethod: paymentMethod.value,
+                    amountReceived: parseFloat(amountReceived.value) || 0,
+                    orderDiscount: parseFloat(document.getElementById('orderDiscount').value) || 0
+                };
+
+                const res = await fetch('/Sales/Complete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': antiForgeryToken
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+                const msgDiv = document.getElementById('resultMessage');
+
+                if (!res.ok) {
+                    msgDiv.innerHTML = `<div class="alert alert-danger">${result.message}</div>`;
+                    return;
+                }
+
+                msgDiv.innerHTML = `<div class="alert alert-success">Sale ${result.invoiceNo} completed! Change due: ${currency}${result.changeDue.toFixed(2)}</div>`;
+                cart = [];
+                renderCart();
+                amountReceived.value = 0;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Complete Sale';
+            }
+        });
+    </script>
+}
