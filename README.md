@@ -113,10 +113,6 @@ Per the SRS "Out of Scope" section, this MVP does **not** include:
 - Full accounting/payroll/general ledger
 - Purchase returns, supplier payment ledger, batch/expiry tracking
 
-## Backup and Restore
-
-See `docs/BACKUP.md` (or your deployment documentation) for database backup/restore steps. A tested backup should be verified against a clean database before final handover, per FR-107.
-
 ## License / Ownership
 
 Internal project prepared for SYNEXUS Software Technologies by Mirha Mehtab
